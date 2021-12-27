@@ -164,6 +164,7 @@ class Test(TestPluginCommon):
 
         # Valid conditionals
         for t in [{"highway": "residential"},
+                  {"highway": "residential", "access:conditional": "no@wet"}, # note: remove if we start warning about missing spaces around @
                   {"highway": "residential", "access:conditional": "no @ wet", "source:access:conditional": "survey"},
                   {"highway": "residential", "maxspeed:conditional": "20 @ (06:00-19:00)"},
                   {"highway": "residential", "maxspeed:conditional": "20 @ (06:00-20:00); 100 @ (22:00-06:00)"},
