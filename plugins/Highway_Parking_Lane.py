@@ -78,8 +78,8 @@ be tagged on that object instead.'''))
         if len(sides) > 0:
             err.append({"class": 31611})
 
-        if "parking:lane:both" in tags and (("parking:lane:right" in tags and tags["parking:lane:right"] == tags["parking:lane:both"]) or 
-                                            ("parking:lane:left" in tags and tags["parking:lane:left"] == tags["parking:lane:both"]):
+        if "parking:lane:both" in tags and (("parking:lane:right" in tags and tags["parking:lane:right"] == tags["parking:lane:both"]) or
+                                            ("parking:lane:left" in tags and tags["parking:lane:left"] == tags["parking:lane:both"])):
             # Conflicting values are dealt with in Highway_Sides
             err.append({"class": 31614})
 
