@@ -25,14 +25,26 @@ import re
 from datetime import date
 from modules.Stablehash import stablehash64
 
+try:
+  from PyKOpeningHours.PyKOpeningHours import OpeningHours, Error
+  module_PyKOpeningHours = True
+  from plugins.TagFix_Opening_Hours import sanitize_openinghours
+except ImportError as e:
+  print(e)
+  module_PyKOpeningHours = False
+
 class ConditionalRestrictions(Plugin):
   def init(self, logger):
     Plugin.init(self, logger)
 
-    self.ReYear = re.compile(r'20\d\d') # Update in 2099
+    self.ReYear = re.compile(r'\b20\d\d') # Update in 2099
     self.ReSimpleCondition = re.compile(r'^\w+$', re.ASCII)
     self.ReAND = re.compile(r'\band\b', re.IGNORECASE)
     self.currentYear = date.today().year
+    # Following regex are to detect likely (possibly misspelled) opening_hours syntaxes
+    self.ReWeekdayMonthOpeningH = re.compile(r'\b[A-Z][a-z]') # i.e. Mar or Mo
+    self.ReMonthDayOpeningH = re.compile(r'\w\w\w[\s-]\d') # i.e. sep 1
+    self.ReTimeOpeningH = re.compile(r'\d\D[\d-]|sun[sr][ei][ts]') # i.e. 5:30 or 5h30 or 5h-8h
 
     self.errors[33501] = self.def_class(item = 3350, level = 2, tags = ['highway', 'fix:chair'],
         title = T_('Bad conditional restriction'),
@@ -53,6 +65,9 @@ For example, use `no @ (weight > 5 AND wet)` rather than `no@weight>5 and wet`.'
         title = T_('Expired conditional'),
         detail = T_('''This conditional was only valid up to a date in the past. It can likely be removed.'''),
         trap = T_('''Other tags might need to be updated too to reflect the new situation.'''))
+    self.errors[33504] = self.def_class(item = 3350, level = 3, tags = ['highway', 'fix:chair'],
+        title = T_('Invalid date/time span'),
+        detail = T_('''A date/time-based condition is invalid or poorly formatted. Time-based conditions of a conditional restriction use the same syntax as the key `opening_hours`.'''))
 
   def way(self, data, tags, nds):
     # Get the relevant tags with *:conditional
@@ -144,6 +159,16 @@ For example, use `no @ (weight > 5 AND wet)` rather than `no@weight>5 and wet`.'
             continue
 
           # Validate time-based conditionals
+          if not module_PyKOpeningHours:
+            continue
+          for c in condition_ANDsplitted:
+            if self.isLikelyOpeningHourSyntax(c):
+              sanitized = sanitize_openinghours(None, c)
+              if not sanitized['isValid']:
+                if "fix" in sanitized:
+                  err.append({"class": 33504, "subclass": 6 + stablehash64(tag + '|' + tag_value + '|' + c), "text": T_("Involves \"{0}\" in \"{1}\". Consider using \"{2}\"", c, tag, sanitized['fix'])})
+                else:
+                  err.append({"class": 33504, "subclass": 6 + stablehash64(tag + '|' + tag_value + '|' + c), "text": T_("Involves \"{0}\" in \"{1}\"", c, tag)})
 
       if bad_tag:
         continue
@@ -166,6 +191,33 @@ For example, use `no @ (weight > 5 AND wet)` rather than `no@weight>5 and wet`.'
 
     if err != []:
       return err
+
+  def isLikelyOpeningHourSyntax(self, condition):
+    # Use a scoring system to determine the likelyness of the condition being time/date based
+    # Not perfect, i.e. 'Mar' and '24/7' will fall through (and bad cases like JAN-APR are thus also not detected)
+    if len(condition) < 5:
+      return False # wet, snow, ..., not a time range
+    score = 0
+    treshold = 3
+    for s in [",", "[", "-", "+", "/"]:
+      if s in condition:
+        score += 1 # characters not found in many other types of conditionals
+    for s in ["=", "<", ">"]:
+      if s in condition:
+        score -= 1 # weight < 25 or so, no meaning in date/time-based conditionals
+    if score >= treshold:
+      return True
+    if score < 0:
+      return False
+    for r in [self.ReYear, self.ReWeekdayMonthOpeningH, self.ReTimeOpeningH, self.ReMonthDayOpeningH]:
+      m = r.findall(condition)
+      if m and len(m) == 1:
+        score += 1
+      elif m and len(m) > 1:
+        score += 2
+      if score >= treshold:
+        return True
+    return False
 
   def node(self, data, tags):
     return self.way(data, tags, None)
