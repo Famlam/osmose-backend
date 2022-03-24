@@ -31,6 +31,7 @@ class ConditionalRestrictions(Plugin):
 
     self.ReYear = re.compile(r'20\d\d') # Update in 2099
     self.ReSimpleCondition = re.compile(r'^\w+$', re.ASCII)
+    self.ReAND = re.compile(r'\band\b', re.IGNORECASE)
     self.currentYear = date.today().year
 
     self.errors[33501] = self.def_class(item = 3350, level = 2, tags = ['highway', 'fix:chair'],
@@ -128,16 +129,21 @@ For example, use `no @ (weight > 5 AND wet)` rather than `no@weight>5 and wet`.'
           err.append({"class": 33501, "subclass": 2 + stablehash64(tag + '|' + tag_value), "text": T_("Mismatch in the number of parentheses in \"{0}\"", tag)})
           continue
 
-      # Check the position of AND is ok
       if not bad_tag:
         for condition in conditions:
-          tmp_cond = " " + condition.replace(" ", "  ") + " "
-          tmp_ANDsplitted = tmp_cond.upper().split(" AND ")
-          for splittedANDpart in tmp_ANDsplitted:
-            if len(splittedANDpart.strip()) == 0:
-              err.append({"class": 33501, "subclass": 4 + stablehash64(tag + '|' + tag_value), "text": T_("Missing condition before or after AND combinator in \"{0}\"", tag)})
-              bad_tag = True
-              break
+          condition_ANDsplitted = list(map(str.strip, self.ReAND.split(condition)))
+          # Check the position of AND is ok
+          if "" in condition_ANDsplitted:
+            err.append({"class": 33501, "subclass": 4 + stablehash64(tag + '|' + tag_value), "text": T_("Missing condition before or after AND combinator in \"{0}\"", tag)})
+            bad_tag = True
+            break
+
+          if len(condition_ANDsplitted) != condition.count("AND") + 1:
+            # Likely lower/mixed case 'AND' used. Might also be a opening_hours fallback rule
+            # For simplicity: ignore.
+            continue
+
+          # Validate time-based conditionals
 
       if bad_tag:
         continue
