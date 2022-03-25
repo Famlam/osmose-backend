@@ -41,6 +41,7 @@ class ConditionalRestrictions(Plugin):
     self.ReSimpleCondition = re.compile(r'^\w+$', re.ASCII)
     self.ReAND = re.compile(r'\band\b', re.IGNORECASE)
     self.currentYear = date.today().year
+    self.comparisonOperatorChars = ["<", "=", ">"]
     # Following regex are to detect likely (possibly misspelled) opening_hours syntaxes
     self.ReWeekdayMonthOpeningH = re.compile(r'\b[A-Z][a-z]') # i.e. Mar or Mo
     self.ReMonthDayOpeningH = re.compile(r'\w\w\w[\s-]\d') # i.e. sep 1
@@ -173,7 +174,7 @@ For example, use `no @ (weight > 5 AND wet)` rather than `no@weight>5 and wet`.'
                 break
             else:
               # Validate vehicle property comparisons
-              if c[0] in [">", "<", "="] or c[-1] in [">", "<", "="]:
+              if c[0] in self.comparisonOperatorChars or c[-1] in self.comparisonOperatorChars:
                 err.append({"class": 33501, "subclass": 5 + stablehash64(tag + '|' + tag_value + '|' + c), "text": T_("Unexpected <, = or > in \"{0}\"", tag)})
                 bad_tag = True
                 break
@@ -210,7 +211,7 @@ For example, use `no @ (weight > 5 AND wet)` rather than `no@weight>5 and wet`.'
     for s in [",", "[", "-", "+", "/"]:
       if s in condition:
         score += 1 # characters not found in many other types of conditionals
-    for s in ["=", "<", ">"]:
+    for s in self.comparisonOperatorChars:
       if s in condition:
         score -= 1 # weight < 25 or so, no meaning in date/time-based conditionals
     if score >= treshold:
