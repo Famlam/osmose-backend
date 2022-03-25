@@ -37,7 +37,7 @@ class ConditionalRestrictions(Plugin):
   def init(self, logger):
     Plugin.init(self, logger)
 
-    self.ReYear = re.compile(r'\b20\d\d') # Update in 2099
+    self.ReYear = re.compile(r'\b20\d\d\b') # Update in 2099
     self.ReSimpleCondition = re.compile(r'^\w+$', re.ASCII)
     self.ReAND = re.compile(r'\band\b', re.IGNORECASE)
     self.currentYear = date.today().year
@@ -158,10 +158,10 @@ For example, use `no @ (weight > 5 AND wet)` rather than `no@weight>5 and wet`.'
             # For simplicity: ignore.
             continue
 
-          # Validate time-based conditionals
           if not module_PyKOpeningHours:
             continue
           for c in condition_ANDsplitted:
+            # Validate time-based conditionals
             if self.isLikelyOpeningHourSyntax(c):
               sanitized = sanitize_openinghours(None, c)
               if not sanitized['isValid']:
@@ -169,6 +169,14 @@ For example, use `no @ (weight > 5 AND wet)` rather than `no@weight>5 and wet`.'
                   err.append({"class": 33504, "subclass": 6 + stablehash64(tag + '|' + tag_value + '|' + c), "text": T_("Involves \"{0}\" in \"{1}\". Consider using \"{2}\"", c, tag, sanitized['fix'])})
                 else:
                   err.append({"class": 33504, "subclass": 6 + stablehash64(tag + '|' + tag_value + '|' + c), "text": T_("Involves \"{0}\" in \"{1}\"", c, tag)})
+                bad_tag = True
+                break
+            else:
+              # Validate vehicle property comparisons
+              if c[0] in [">", "<", "="] or c[-1] in [">", "<", "="]:
+                err.append({"class": 33501, "subclass": 5 + stablehash64(tag + '|' + tag_value + '|' + c), "text": T_("Unexpected <, = or > in \"{0}\"", tag)})
+                bad_tag = True
+                break
 
       if bad_tag:
         continue
@@ -242,11 +250,24 @@ class Test(TestPluginCommon):
                   {"highway": "residential", "access:forward:conditional": "delivery @ (Mo-Fr 06:00-11:00,17:00-19:00;Sa 03:30-19:00)"},
                   {"highway": "residential", "access:forward:conditional": "no @ (10:00-18:00 AND length>5)"},
                   {"highway": "residential", "access:conditional": "no @ 2099"},
+                  {"highway": "residential", "access:conditional": "no @ (weight >= 12020 AND length < 20200)"},
                   {"highway": "residential", "access:conditional": "no @ (2099 May 22-2099 Oct 7)"},
                   {"highway": "residential", "access:conditional": "no @ (2010 May 22-2099 Oct 7)"},
                   {"highway": "residential", "turn:lanes:forward:conditional": "left|through|through;right @ (Mo-Fr 06:00-09:00)"},
                  ]:
           assert not a.way(None, t, None), a.way(None, t, None)
+
+        # Invalid or suboptimal conditions
+        for t in [{"highway": "residential", "access:conditional": "no @ (weight >)"},
+                  {"highway": "residential", "access:conditional": "no @ (weight <= AND wet); destination @ snow"},
+                  {"highway": "residential", "access:conditional": "no @ (2098-05-22 - 2099-10-7)"},
+                  {"highway": "residential", "access:conditional": "no @ (22 mei 2099 - 07 okt 2099)"},
+                  {"highway": "residential", "access:conditional": "no @ (JUL 01-JAN 31)"},
+                  {"highway": "residential", "access:conditional": "no @ (6h00-19h00)"},
+                  {"highway": "residential", "access:conditional": "no @ (Ma-Vr 18:00-20:00); destination @ (length < 4)"},
+                  {"highway": "residential", "access:conditional": "no @ (Mei 22 - Okt 7 AND weight > 5)"},
+                 ]:
+          assert a.way(None, t, None), a.way(None, t, None)
 
         # Expired conditionals
         for t in [{"highway": "residential", "access:forward:conditional": "no @ 2020"},
