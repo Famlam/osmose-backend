@@ -257,7 +257,16 @@ class Test(TestPluginCommon):
                  ]:
           assert not a.way(None, t, None), a.way(None, t, None)
 
-        # Invalid or suboptimal conditions
+        # Expired conditionals
+        for t in [{"highway": "residential", "access:forward:conditional": "no @ 2020"},
+                  {"highway": "residential", "access:conditional": "no @ (2018 May 22-2020 Oct 7)"},
+                  {"highway": "residential", "access:conditional": "no @ (2018 May 22-2020 Oct 7); delivery @ 2099"},
+                  {"highway": "residential", "access:conditional": "no @ (2018 May 22-2020 Oct 7); destination @ (length < 4)"},
+                  {"highway": "residential", "access:conditional": "no @ (2018 May 22-2020 Oct 7 AND weight > 5)"},
+                 ]:
+          assert a.way(None, t, None), a.way(None, t, None)
+
+        # Invalid or suboptimal conditions in conditionals
         for t in [{"highway": "residential", "access:conditional": "no @ (weight >)"},
                   {"highway": "residential", "access:conditional": "no @ (weight <= AND wet); destination @ snow"},
                   {"highway": "residential", "access:conditional": "no @ (2098-05-22 - 2099-10-7)"},
@@ -266,15 +275,6 @@ class Test(TestPluginCommon):
                   {"highway": "residential", "access:conditional": "no @ (6h00-19h00)"},
                   {"highway": "residential", "access:conditional": "no @ (Ma-Vr 18:00-20:00); destination @ (length < 4)"},
                   {"highway": "residential", "access:conditional": "no @ (Mei 22 - Okt 7 AND weight > 5)"},
-                 ]:
-          assert a.way(None, t, None), a.way(None, t, None)
-
-        # Expired conditionals
-        for t in [{"highway": "residential", "access:forward:conditional": "no @ 2020"},
-                  {"highway": "residential", "access:conditional": "no @ (2018 May 22-2020 Oct 7)"},
-                  {"highway": "residential", "access:conditional": "no @ (2018 May 22-2020 Oct 7); delivery @ 2099"},
-                  {"highway": "residential", "access:conditional": "no @ (2018 May 22-2020 Oct 7); destination @ (length < 4)"},
-                  {"highway": "residential", "access:conditional": "no @ (2018 May 22-2020 Oct 7 AND weight > 5)"},
                  ]:
           assert a.way(None, t, None), a.way(None, t, None)
 
