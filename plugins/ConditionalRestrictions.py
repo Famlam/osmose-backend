@@ -268,13 +268,14 @@ class Test(TestPluginCommon):
 
         # Invalid or suboptimal conditions in conditionals
         for t in [{"highway": "residential", "access:conditional": "no @ (weight >)"},
-                  {"highway": "residential", "access:conditional": "no @ (weight <= AND wet); destination @ snow"},
+                  {"highway": "residential", "access:conditional": "no @ (foggy AND weight <= AND wet); destination @ snow"},
                   {"highway": "residential", "access:conditional": "no @ (2098-05-22 - 2099-10-7)"},
                   {"highway": "residential", "access:conditional": "no @ (22 mei 2099 - 07 okt 2099)"},
                   {"highway": "residential", "access:conditional": "no @ (JUL 01-JAN 31)"},
                   {"highway": "residential", "access:conditional": "no @ (6h00-19h00)"},
                   {"highway": "residential", "access:conditional": "no @ (Ma-Vr 18:00-20:00); destination @ (length < 4)"},
                   {"highway": "residential", "access:conditional": "no @ (Mei 22 - Okt 7 AND weight > 5)"},
+                  {"highway": "residential", "access:conditional": "no @ (weight > 5 AND mei 22 - okt 7)"},
                  ]:
           assert a.way(None, t, None), a.way(None, t, None)
 
