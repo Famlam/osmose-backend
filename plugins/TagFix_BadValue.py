@@ -39,7 +39,7 @@ class TagFix_BadValue(Plugin):
 '''It's possible a mapper was trying to map a feature with no existing agreed upon tagging.
 However, this should probably still conform to the typical format used for values of the given tag.''')
         )
-        self.errors[30404] = self.def_class(item = 3040, level = 3, tags = ['highway', 'fix:chair'],
+        self.errors[40613] = self.def_class(item = 4061, level = 3, tags = ['highway', 'fix:chair'],
         title = T_('Unspecific value'),
         detail = T_('''The value of the tag is very unspecific. Replace it by a meaningful value.'''))
 
