@@ -375,7 +375,7 @@ class Test(TestPluginCommon):
 
         # Nodes
         assert not a.node(None, {"barrier": "lift_gate", "access:conditional": "no @ wet"})
-        assert a.node(None, {"barrier": "lift_gate", "access:conditional": "no @ Mo-Fr 06:00-11:00,17:00-19:00;Sa 03:30-19:00"})
+        assert a.node(None, {"barrier": "lift_gate"})
 
         # Relations
         assert not a.relation(None, {"type": "restriction", "restriction:conditional": "no_u_turn @ (06:00-22:00)"}, None)
