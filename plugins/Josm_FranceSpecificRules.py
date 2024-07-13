@@ -1059,7 +1059,7 @@ class Test(TestPluginMapcss):
         with with_options(n, {'country': 'FR'}):
             self.check_not_err(n.way(data, {'highway': 'primary', 'junction': 'roundabout', 'nat_ref': '62A901609CD_2D', 'operator': 'SANEF'}, [0]), expected={'class': 9019002, 'subclass': 0})
         with with_options(n, {'country': 'FR'}):
-            self.check_err(n.way(data, {'highway': 'primary', 'nat_ref': '62A901609CD_2D', 'operator': 'SANEF'}, [0]), expected={'class': 9019002, 'subclass': 0})
+            self.check_not_err(n.way(data, {'highway': 'primary', 'nat_ref': '62A901609CD_2D', 'operator': 'SANEF'}, [0]), expected={'class': 9019002, 'subclass': 0})
         with with_options(n, {'country': 'FR'}):
             self.check_not_err(n.way(data, {'highway': 'service', 'junction': 'roundabout', 'nat_ref': '62A801609CD_12D', 'operator': 'SANEF'}, [0]), expected={'class': 9019002, 'subclass': 0})
         with with_options(n, {'country': 'FR'}):
@@ -1101,7 +1101,7 @@ class Test(TestPluginMapcss):
         with with_options(n, {'country': 'FR'}):
             self.check_not_err(n.way(data, {'highway': 'residential', 'name': 'impasse', 'ref:FR:FANTOIR': '751064581T'}, [0]), expected={'class': 9019005, 'subclass': 0})
         with with_options(n, {'country': 'FR'}):
-            self.check_not_err(n.way(data, {'highway': 'residential', 'name': 'impasse', 'ref:FR:FANTOIR': '75106S581T;67317B012Y'}, [0]), expected={'class': 9019005, 'subclass': 0})
+            self.check_err(n.way(data, {'highway': 'residential', 'name': 'impasse', 'ref:FR:FANTOIR': '75106S581T;67317B012Y'}, [0]), expected={'class': 9019005, 'subclass': 0})
         with with_options(n, {'country': 'FR'}):
             self.check_not_err(n.way(data, {'highway': 'residential', 'name': 'impasse', 'ref:FR:FANTOIR': '95106A581'}, [0]), expected={'class': 9019005, 'subclass': 0})
         with with_options(n, {'country': 'FR'}):
