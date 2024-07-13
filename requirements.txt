@@ -17,7 +17,7 @@ tiletanic
 sentry-sdk
 
 # Tests
-pytest
+pytest = 7.4.4
 xmltodict
 termcolor
 pylama
