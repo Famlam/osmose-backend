@@ -64,18 +64,18 @@ class Test(TestPluginCommon):
         a = TagFix_Area(None)
         a.init(None)
 
-        for t in [{"area":"yes", "railway": "rail"},
-                  {"area":"no", "amenity": "bakery"},
+        for t in [{"a":"yes", "railway": "rail"},
+                  {"a":"no", "amenity": "bakery"},
                  ]:
             self.check_err(a.way(None, t, None), t)
 
-        for t in [{"area":"yes", "railway": "platform"},
-                  {"area":"yes", "amenity": "bakery"},
-                  {"area":"no", "building": "yes"},
+        for t in [{"a":"yes", "railway": "platform"},
+                  {"a":"yes", "amenity": "bakery"},
+                  {"a":"no", "building": "yes"},
                  ]:
             assert not a.way(None, t, None), t
 
         # Unnecessary area=yes, dealt with by JOSM mapcss rules instead
-        for t in [{"area":"yes", "building": "yes"},
+        for t in [{"a":"yes", "building": "yes"},
                  ]:
             assert not a.way(None, t, None), t
