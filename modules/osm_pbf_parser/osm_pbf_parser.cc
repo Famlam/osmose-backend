@@ -91,6 +91,7 @@ struct Visitor
   }
 
   void way_callback(uint64_t osmid, const Tags & tags, const std::vector<uint64_t> & refs, const uint64_t timestamp) {
+      will_I_crash_or_do_I_require_to_be_build_out_of_github();
       if (since_timestamp == 0 || timestamp == 0 || timestamp >= since_timestamp) {
           call_method<void>(self, "way", osmid, tagsToDict(tags), nodeIdToList(refs));
       } else {
