@@ -80,7 +80,7 @@ struct Visitor
 
   void node_callback(uint64_t osmid, double lon, double lat, const Tags & tags, const uint64_t timestamp) {
       if (!tags.empty() && (since_timestamp == 0 || timestamp == 0 || timestamp >= since_timestamp)) {
-          call_method<void>(self, "node", osmid, lon, lat, tagsToDict(tags));
+          call_method<void>(self, "node", osmid, lon, lat, tagsToDict(tags), timestamp);
       } else {
           filtered_nodes_osmid.push_back(osmid);
       }
@@ -91,9 +91,8 @@ struct Visitor
   }
 
   void way_callback(uint64_t osmid, const Tags & tags, const std::vector<uint64_t> & refs, const uint64_t timestamp) {
-      will_I_crash_or_do_I_require_to_be_build_out_of_github();
       if (since_timestamp == 0 || timestamp == 0 || timestamp >= since_timestamp) {
-          call_method<void>(self, "way", osmid, tagsToDict(tags), nodeIdToList(refs));
+          call_method<void>(self, "way", osmid, tagsToDict(tags), nodeIdToList(refs), timestamp);
       } else {
           filtered_ways_osmid.push_back(osmid);
       }
@@ -105,7 +104,7 @@ struct Visitor
 
   void relation_callback(uint64_t osmid, const Tags & tags, const References & refs, const uint64_t timestamp) {
       if (since_timestamp == 0 || timestamp == 0 || timestamp >= since_timestamp) {
-          call_method<void>(self, "relation", osmid, tagsToDict(tags), referencesToDict(refs));
+          call_method<void>(self, "relation", osmid, tagsToDict(tags), referencesToDict(refs), timestamp);
       } else {
           filtered_relations_osmid.push_back(osmid);
       }
